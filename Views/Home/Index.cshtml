@@ -1,0 +1,239 @@
+﻿@model FacilitiesSensor.Models.TanqueSUF
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Tanques Dinámicos";
+}
+
+<div class="container mt-4">
+
+    <div class="row">
+
+        <!-- ===================================== -->
+        <!-- TANQUE A -->
+        <!-- ===================================== -->
+
+        <div class="col-md-6">
+
+            <div class="card text-center">
+
+                <div class="card-header">
+                    Tanque A
+                </div>
+
+                <div class="card-body">
+
+                    <div class="tank">
+
+                        <!-- ===================================== -->
+                        <!-- AGUA -->
+                        <!-- ===================================== -->
+
+                        <div class="water">
+
+                            <div class="fill-body"
+                                 style="height:@Model.NivelActual%">
+                            </div>
+
+                        </div>
+
+                        <!-- ===================================== -->
+                        <!-- PNG SUPERIOR -->
+                        <!-- ===================================== -->
+
+                        <img src="/images/copitank22.png"
+                             alt="Tanque A" />
+
+                        <!-- ===================================== -->
+                        <!-- GRADUACIÓN -->
+                        <!-- ===================================== -->
+
+                        <div class="line linea-20">20%</div>
+                        <div class="line linea-40">40%</div>
+                        <div class="line linea-60">60%</div>
+                        <div class="line linea-80">80%</div>
+                        <div class="line linea-100">100%</div>
+
+                    </div>
+
+                    <p class="mt-3">
+                        Nivel actual: @Model.NivelActual%
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===================================== -->
+        <!-- TANQUE B -->
+        <!-- ===================================== -->
+
+        <div class="col-md-6">
+
+            <div class="card text-center">
+
+                <div class="card-header">
+                    Tanque B
+                </div>
+
+                <div class="card-body">
+
+                    <div class="tank">
+
+                        <!-- AGUA -->
+                        <div class="water">
+
+                            <div class="fill-body"
+                                 style="height:@Model.NivelActual%">
+                            </div>
+
+                        </div>
+
+                        <!-- PNG -->
+                        <img src="/images/copitank22.png"
+                             alt="Tanque B" />
+
+                        <!-- GRADUACIÓN -->
+                        <div class="line linea-20">20%</div>
+                        <div class="line linea-40">40%</div>
+                        <div class="line linea-60">60%</div>
+                        <div class="line linea-80">80%</div>
+                        <div class="line linea-100">100%</div>
+
+                    </div>
+
+                    <p class="mt-3">
+                        Nivel actual: @Model.NivelActual%
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+    /* ===================================== */
+    /* TANQUE */
+    /* ===================================== */
+
+    .tank {
+        position: relative;
+        width: 185px;
+        height: 185px;
+        margin: 20px auto;
+    }
+
+    /* ===================================== */
+    /* CONTENEDOR AGUA */
+    /* ===================================== */
+
+    .water {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    /* ===================================== */
+    /* AGUA */
+    /* ===================================== */
+
+    .fill-body {
+        position: absolute;
+        left: 49%;
+        /*
+                EL AGUA SUBE DESDE ABAJO
+            */
+
+        bottom: 0;
+        transform: translateX(-50%);
+        /*
+                AJUSTADO A TU PNG
+            */
+
+        width: 100%;
+        background: #4da3ff;
+        z-index: 1;
+        transition: height .5s ease;
+        /*
+                MUY IMPORTANTE:
+                LA MÁSCARA DEBE SER
+                SOLO LA SILUETA BLANCA
+                DEL INTERIOR DEL TANQUE
+            */
+
+        -webkit-mask-image: url('/images/copitank22-mask.png');
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: 45% center;
+        -webkit-mask-size: 92% 92%;
+        mask-image: url('/images/copitank22-mask.png');
+        mask-repeat: no-repeat;
+        mask-position: 45% center;
+        mask-size: 92% 92%;
+    }
+
+    /* ===================================== */
+    /* PNG SUPERIOR */
+    /* ===================================== */
+
+    .tank img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        pointer-events: none;
+        image-rendering: crisp-edges;
+    }
+
+    /* ===================================== */
+    /* LÍNEAS */
+    /* ===================================== */
+
+    .line {
+        position: absolute;
+        left: 0;
+        width: 115%;
+        border-top: 1px dashed #000;
+        font-size: 12px;
+        font-weight: bold;
+        color: #000;
+        text-align: right;
+        padding-right: 0;
+        z-index: 3;
+        transform: translateX(16px);
+    }
+
+    /* ===================================== */
+    /* POSICIONES */
+    /* ===================================== */
+
+    .linea-20 {
+        top: 76%;
+    }
+
+    .linea-40 {
+        top: 58%;
+    }
+
+    .linea-60 {
+        top: 40%;
+    }
+
+    .linea-80 {
+        top: 24%;
+    }
+
+    .linea-100 {
+        top: 10%;
+    }
+
+</style>
