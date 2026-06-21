@@ -1,6 +1,5 @@
 using FacilitiesSensor.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace FacilitiesSensor.Controllers
 {
@@ -8,25 +7,29 @@ namespace FacilitiesSensor.Controllers
     {
         public IActionResult Index()
         {
-            var modelo = new TanqueSUF
+            var modelo = new DashboardViewModel
             {
-                NivelActual = 100 // ejemplo, 70%
+                Tanques = new List<Tanque>
+        {
+            new Tanque
+            {
+                Id = 1,
+                Nombre = "Tanque A",
+                NivelActual = 50
+            },
+
+            new Tanque
+            {
+                Id = 2,
+                Nombre = "Tanque B",
+                NivelActual = 45
+            }
+        },
+
+                Sensores = new List<Sensor>()
             };
+
             return View(modelo);
-            
-        }
-
-       
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
