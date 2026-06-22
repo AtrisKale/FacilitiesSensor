@@ -5,6 +5,33 @@ namespace FacilitiesSensor.Controllers
 {
     public class HomeController : Controller
     {
+
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View(); // Renderiza Views/Account/Login.cshtml
+        }
+
+        [HttpPost]
+        public IActionResult Login(Contraseña model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Validación simple de ejemplo
+                if (model.Username == "admin" && model.Password == "tgna1400")
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
+                ViewBag.ErrorMessage = "Contraseña equivocada. Intenta de nuevo.";
+
+            }
+
+            return View(model);
+        }
+
+
+
         public IActionResult Index()
         {
             var modelo = new DashboardViewModel
