@@ -1,4 +1,4 @@
-﻿@model FacilitiesSensor.Models.DashboardViewModel@model FacilitiesSensor.Models.DashboardViewModel
+﻿@model FacilitiesSensor.Models.DashboardViewModel
 
 @{
 Layout = "~/Views/Shared/_Layout.cshtml";
@@ -21,7 +21,7 @@ ViewData["Title"] = "Dashboard Facilities";
 
                 <div class="card-body text-center">
 
-                    <div class="tank">
+                    <div class="tank" onclick="abrirGrafica('A')">
 
                         <div class="tank-mask">
 
@@ -68,7 +68,7 @@ ViewData["Title"] = "Dashboard Facilities";
 
                 <div class="card-body text-center">
 
-                    <div class="tank">
+                    <div class="tank" onclick="abrirGrafica('B')">
 
                         <div class="tank-mask">
 
@@ -203,7 +203,41 @@ ViewData["Title"] = "Dashboard Facilities";
 
 </div>
 
+<div class="row mt-4">
+    <div class="col-12">
 
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">
+                Sistema de Alarmas SCADA
+            </div>
+
+            <div class="card-body">
+
+                <ul id="listaAlarmas" class="list-unstyled mb-0"></ul>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- MODAL GRAFICA SCADA -->
+
+
+<div id="modalGrafica" class="modal-grafica">
+
+    <div class="modal-content">
+
+        <h4 id="tituloGrafica">Historial del Tanque :</h4>
+
+        <canvas id="chartTanque"></canvas>
+
+     <span class="close-modal" onclick="cerrarGrafica()">×</span>
+
+    </div>
+
+</div>
 
 <style>
 
@@ -212,8 +246,8 @@ ViewData["Title"] = "Dashboard Facilities";
 
     .tank {
         position: relative;
-        width: 185px;
-        height: 185px;
+        width: 300px;
+        height: 300px;
         margin: 20px auto;
     }
 
@@ -301,4 +335,320 @@ ViewData["Title"] = "Dashboard Facilities";
     .card {
         border: none;
     }
+
+
+
+
+
+    .modal-grafica {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        overflow: auto;
+    }
+
+    .modal-content {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 600px;
+        color: white;
+        position: relative;
+    }
+
+    #tituloGrafica {
+        text-align: center;
+        color: #2596be;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #333;
+        transition: 0.2s;
+    }
+
+        .close-modal:hover {
+            color: red;
+        }
+
+
+
+    #listaAlarmas li {
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        font-size: 13px;
+    }
 </style>
+
+<script>
+
+    let ultimaAlarmaA = null;
+    let ultimaAlarmaB = null;
+
+    const ColoresAlarma = {
+        VACIO: "#6c757d",      // gris
+        BAJO: "#ffc107",       // amarillo
+        MITAD: "#0dcaf0",      // azul claro
+        LLENO: "#198754",      // verde
+        DESBORDE: "#dc3545"    // rojo
+    };
+
+    /* =========================
+       MOTOR DE ALARMAS
+    ========================= */
+
+    function evaluarTanque(nombre, nivel) {
+
+        let alarma = null;
+        let color = null;
+
+        if (nivel <= 0) {
+            alarma = "Tanque vacío";
+            color = ColoresAlarma.VACIO;
+        }
+        else if (nivel <= 20) {
+            alarma = "Escasez de agua";
+            color = ColoresAlarma.BAJO;
+        }
+        else if (nivel >= 45 && nivel <= 55) {
+            alarma = "Mitad de tanque";
+            color = ColoresAlarma.MITAD;
+        }
+        else if (nivel >= 95 && nivel <= 100) {
+            alarma = "Tanque lleno";
+            color = ColoresAlarma.LLENO;
+        }
+        else if (nivel > 100) {
+            alarma = "⚠ Desborde";
+            color = ColoresAlarma.DESBORDE;
+        }
+
+        if (alarma) {
+            agregarAlarma(nombre, nivel, alarma, color);
+        }
+    }
+
+    /* =========================
+       MOSTRAR ALARMA
+    ========================= */
+    function agregarAlarma(tanque, nivel, texto, color) {
+
+        const lista = document.getElementById("listaAlarmas");
+
+        const li = document.createElement("li");
+
+        li.style.padding = "10px";
+        li.style.marginBottom = "8px";
+        li.style.background = "#1f1f1f";
+        li.style.borderRadius = "4px"; li.style.padding = "6px";
+        li.style.borderLeft = `10px solid ${color}`;
+        li.style.boxShadow = "0 0 6px rgba(0,0,0,0.4)";
+        li.style.color = "white";
+        li.style.fontSize = "16px";
+        li.style.fontWeight = "500";
+
+        li.textContent =
+            `[${new Date().toLocaleTimeString()}] Tanque ${tanque}: ${texto} (${nivel}%)`;
+
+        lista.prepend(li);
+    }
+
+    /* =========================
+       LECTURA DESDE TU RAZOR
+    ========================= */
+
+    function leerNiveles() {
+
+        const nivelA = parseInt("@Model.Tanques[0].NivelActual");
+        const nivelB = parseInt("@Model.Tanques[1].NivelActual");
+
+        evaluarTanque("A", nivelA);
+        evaluarTanque("B", nivelB);
+    }
+
+    /* =========================
+       INICIO SCADA
+    ========================= */
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // lectura inicial
+        leerNiveles();
+
+        // simulación opcional (si luego conectas PLC lo quitas)
+        setInterval(() => {
+
+            leerNiveles();
+
+        }, 300000);
+
+    });
+
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+<script>
+
+    let chart;
+
+    /* =========================
+       ABRIR GRAFICA
+    ========================= */
+
+    function abrirGrafica(tanque) {
+
+        document.getElementById("modalGrafica").style.display = "flex";
+
+        document.getElementById("tituloGrafica").innerText =
+            "Histórico Tanque " + tanque;
+
+        const data = generarDatosSimulados();
+
+        renderGrafica(data);
+    }
+
+    /* =========================
+       SIMULACION 24H
+    ========================= */
+    function generarDatosSimulados() {
+
+        const labels = [];
+        const data = [];
+
+        for (let i = 1; i <= 24; i++) {
+
+            let ampm = i >= 12 ? "PM" : "AM";
+            let hour12 = i % 12;
+            if (hour12 === 0) hour12 = 12;
+
+            labels.push(hour12 + " " + ampm);
+            data.push(Math.floor(Math.random() * 100));
+        }
+
+        return { labels, data };
+    }
+
+    /* =========================
+       RENDER GRAFICA
+    ========================= */
+    function renderGrafica(obj) {
+
+        const ctx = document.getElementById("chartTanque").getContext("2d");
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: 'line',
+
+            data: {
+                labels: obj.labels,
+
+                datasets: [{
+                    label: 'Nivel del tanque (%)',
+                    data: obj.data,
+
+                    borderColor: '#4da3ff',
+                    backgroundColor: 'rgba(77,163,255,0.2)',
+
+                    pointRadius: 4,
+                    pointBackgroundColor: '#4da3ff',
+
+                    tension: 0.35, // curva suave (SCADA moderno)
+                    fill: true
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#000'
+                        }
+                    }
+                },
+
+                scales: {
+
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Hora del día"
+                        },
+                        ticks: {
+                            color: '#000',
+                            callback: function (value, index) {
+                                return this.getLabelForValue(value);
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 12   // 🔥 máximo 12 puntos visibles
+                        }
+                    },
+
+                    y: {
+                        title: {
+                            display: true,
+                            text: "Nivel %"
+                        },
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            color: '#000'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /* =========================
+       CERRAR MODAL
+    ========================= */
+
+    function abrirGrafica(tanque) {
+
+        document.getElementById("chartTanque").style.background = "white";
+
+        document.getElementById("modalGrafica").style.display = "flex";
+
+        document.getElementById("tituloGrafica").innerText =
+            "Historial del Tanque: " + tanque;
+
+        const obj = generarDatosSimulados();
+
+        renderGrafica(obj);
+    }
+
+    function cerrarGrafica() {
+
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+
+        document.getElementById("modalGrafica").style.display = "none";
+    }
+
+</script>

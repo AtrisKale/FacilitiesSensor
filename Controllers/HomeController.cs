@@ -15,14 +15,14 @@ namespace FacilitiesSensor.Controllers
             {
                 Id = 1,
                 Nombre = "Tanque A",
-                NivelActual = 50
+                NivelActual = 45
             },
 
             new Tanque
             {
                 Id = 2,
                 Nombre = "Tanque B",
-                NivelActual = 45
+                NivelActual = 85
             }
         },
 
